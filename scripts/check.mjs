@@ -7,6 +7,15 @@ async function walk(folder) { const entries = await readdir(folder, { withFileTy
 const files = await walk(dir);
 const html = files.filter(file => file.endsWith('.html'));
 const pages = new Map(await Promise.all(html.map(async file => [file, await readFile(file, 'utf8')])));
+const course = JSON.parse(await readFile(path.join(root, 'content/course.json'), 'utf8'));
+for (const lesson of course.lessons) {
+  const source = pages.get(path.join(dir, 'lessons', lesson.slug, 'index.html'));
+  const sections = [...source.matchAll(/<section class="lesson-section" id="([^"]+)" data-section>/g)].map(match => match[1]);
+  const completions = [...source.matchAll(/data-complete="([^"]+)"/g)].map(match => match[1]);
+  const expected = lesson.sections.map(section => section.id);
+  if (JSON.stringify(sections) !== JSON.stringify(expected) || JSON.stringify(completions) !== JSON.stringify(expected)) throw new Error('Lesson sections/progress do not match metadata: ' + lesson.slug);
+  if (!lesson.scope || !lesson.notes || !source.includes(lesson.source)) throw new Error('Missing lesson-specific source notes: ' + lesson.slug);
+}
 let links = 0;
 for (const [file, source] of pages) {
   const ids = [...source.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);

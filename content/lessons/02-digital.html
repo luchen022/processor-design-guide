@@ -1,0 +1,156 @@
+<div class="chapter-intro"><span class="intro-symbol" aria-hidden="true">↳</span><p><strong>这一章把“CPU 会执行指令”拆成能看懂的电路。</strong> 建议分 5 次学：① 门与布尔代数；② 卡诺图；③ 运算、选择与存储；④ 触发器与状态机；⑤ 数据通路和自测。每次理解后再往下，不必一次读完 151 页。</p></div>
+
+<section class="lesson-section" id="digital-logic" data-section>
+ <div class="section-heading"><span class="section-index">01</span><div><div class="eyebrow">把电信号抽象成 0 和 1</div><h2>电平、逻辑门与 CMOS</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 4–12、49–62 页</p>
+ <p class="section-lead">0 和 1 是对电信号的逻辑抽象，逻辑门规定它们怎样组合。</p>
+<p>导线上的真实电压连续变化。数字电路把一定的电压范围解释为低电平或高电平，再映射为逻辑 0、1。这里先采用<strong>高电平代表 1 的正逻辑</strong>。低有效信号则在 0 时生效，常在名称上加横线、斜杠或端口小圆圈。</p>
+<p>物理电压不是只有两个精确数值，数字电路也不全都只在离散时刻变化；同步系统通过时钟组织何时保存状态。门的输出需要传播时间才稳定。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">运算</th><th scope="col">表达式</th><th scope="col">输出为 1 的条件</th></tr></thead><tbody><tr><th scope="row">与 AND</th><td>A·B 或 AB</td><td>两个输入都为 1</td></tr><tr><th scope="row">或 OR</th><td>A+B</td><td>至少一个输入为 1</td></tr><tr><th scope="row">非 NOT</th><td>¬A</td><td>A 为 0</td></tr><tr><th scope="row">异或 XOR</th><td>A⊕B</td><td>两个输入不同</td></tr><tr><th scope="row">与非 NAND</th><td>¬(AB)</td><td>不是两个输入都为 1</td></tr><tr><th scope="row">或非 NOR</th><td>¬(A+B)</td><td>两个输入都为 0</td></tr><tr><th scope="row">同或 XNOR</th><td>¬(A⊕B)</td><td>两个输入相同</td></tr></tbody></table></div><div class="lab" id="gate-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>切换输入，看逻辑门的输出</h3></div><span class="lab-chip">交互演示</span></div><div class="lab-controls"><label>逻辑门<select data-gate-op><option>AND</option><option>OR</option><option>XOR</option><option>NAND</option><option>NOR</option><option>XNOR</option><option>NOT</option></select></label><label>输入 A<select data-gate-a><option>0</option><option selected>1</option></select></label><label data-gate-b-control>输入 B<select data-gate-b><option>0</option><option>1</option></select></label></div><div class="table-scroll"><table class="data-table compact simulation-state"><thead><tr><th scope="col">A</th><th scope="col">B</th><th scope="col">Y</th></tr></thead><tbody data-gate-table></tbody></table></div><p class="lab-result" data-result aria-live="polite"></p><p class="input-error" data-error role="alert" hidden></p></div>
+<h3>只保留够用的器件原理</h3>
+<p>MOS 管可粗略看作由栅极控制的开关。CMOS 用互补的 nMOS 与 pMOS 配合：反相器输入低时，上拉 pMOS 导通、下拉 nMOS 截止，输出高；输入高时相反，输出低。这解释了“非”门怎样把逻辑关系变成电压行为。</p>
+<p>在理想稳定状态下避免电源到地直接贯通，是 CMOS 的一个优点；切换时要给电容充放电，实际器件也有泄漏，不能理解为零功耗。CMOS 与非门的下拉 nMOS 串联，只有两个输入都高才把输出拉低；或非门的下拉 nMOS 并联，有一个输入高便可拉低。</p>
+<p>PN 结、掺杂和二极管的细节先不展开。本课程接下来使用逻辑门作为设计积木，不依赖背原子轨道、封装脚号或某个示例电压值。</p>
+ <button type="button" class="complete-button" data-complete="digital-logic" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="boolean-algebra" data-section>
+ <div class="section-heading"><span class="section-index">02</span><div><div class="eyebrow">从功能得到表达式</div><h2>布尔代数与真值表</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 13–30、46–48、65–69 页</p>
+ <p class="section-lead">真值表穷举行为，表达式描述行为，电路实现行为；三者可以互相转换。</p>
+<p>这里的 <code>+</code> 表示或，邻接或 <code>·</code> 表示与，<code>¬</code> 表示非。优先级通常是非 → 与 → 或，不清楚时加括号。逻辑或中 1+1=1，与普通二进制加法不同。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">规则</th><th scope="col">表达式</th><th scope="col">怎样理解</th></tr></thead><tbody><tr><th scope="row">恒等与支配</th><td>A+0=A；A·1=A；A+1=1；A·0=0</td><td>与 1 不改变，或 0 不改变</td></tr><tr><th scope="row">幂等与互补</th><td>A+A=A；AA=A；A+¬A=1；A¬A=0</td><td>重复没有额外作用；互补覆盖全部或完全互斥</td></tr><tr><th scope="row">分配</th><td>A(B+C)=AB+AC；A+BC=(A+B)(A+C)</td><td>逻辑运算有两种分配关系</td></tr><tr><th scope="row">吸收</th><td>A+AB=A；A(A+B)=A</td><td>A 已覆盖 AB 的所有成立情况</td></tr><tr><th scope="row">德摩根</th><td>¬(AB)=¬A+¬B；¬(A+B)=¬A¬B</td><td>整体取反时，与或互换，分别取反</td></tr></tbody></table></div>
+<p>例如 <code>A+¬AB=(A+¬A)(A+B)=A+B</code>。检查一个恒等式，可以把所有输入组合代入：n 个变量有 2ⁿ 行。逻辑式相等的含义是<strong>每一种输入组合的输出都相同</strong>。</p>
+<h3>从真值表写出标准与或式</h3>
+<p>固定变量顺序为 <strong>ABC，A 是最高位</strong>。输入 101 对应十进制 5，它唯一对应的最小项是 <code>m₅=A¬BC</code>。最小项包含全部变量，每个变量出现一次；该行输入为 1，变量就不取反，为 0 就取反。</p>
+<p>找出真值表里 Y=1 的全部行，把对应最小项相或。例如仅在 011、101、111 输出 1：</p>
+<div class="formula">Y = ¬ABC + A¬BC + ABC = Σm(3,5,7)<br>= BC + AC</div>
+<p>推导：<code>¬ABC+ABC=BC</code>；同时 <code>A¬BC+ABC=AC</code>。同一个 ABC 可以参与两次合并，因为 X+X=X。固定变量顺序后，标准最小项展开是确定的；化简后的最简形式可能不唯一。</p>
+<h3>组合逻辑的分析与设计</h3>
+<p><strong>分析已有电路：</strong>按信号流向逐级写表达式 → 列真值表 → 解释功能。<strong>设计新电路：</strong>把需求变成输入输出定义 → 穷举真值表 → 化简 → 连接逻辑门，再检查所有情况。</p>
+<p>例：三人多数表决，至少两票为 1 才通过。成立的行是 011、101、110、111，化简为 <code>Y=AB+AC+BC</code>。同一函数可以有不同电路，延迟、门数与功耗也可能不同。</p>
+<details class="worked-example"><summary>选读：反演与对偶有什么区别？</summary><p>反演是求原函数的非：对整个式子用德摩根定律，要正确处理变量取反与括号。对偶是在式中把与、或互换，0、1 互换，变量本身不取反。例如 A+0=A 的对偶为 A·1=A；对偶不是把函数输出取反。</p><p>共识定理 AB+¬AC+BC=AB+¬AC 可进一步去掉冗余项。先用真值表确认，再理解代数化简，不必一次背完所有公式。</p></details>
+ <button type="button" class="complete-button" data-complete="boolean-algebra" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="karnaugh-map" data-section>
+ <div class="section-heading"><span class="section-index">03</span><div><div class="eyebrow">用相邻关系消去变量</div><h2>卡诺图化简</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 31–45 页</p>
+ <p class="section-lead">相邻最小项只有一个变量不同，把它们合并就能消去这个变量。</p>
+<p>卡诺图的列序采用格雷顺序 <strong>00、01、11、10</strong>，保证相邻格只改变一位。最左与最右也相邻，最上与最下也可以相邻；对角格不算相邻。</p>
+<div class="formula">¬ABC + ABC = (¬A+A)BC = BC</div>
+<p>两个相邻的 1 可以消去一个变化变量；4 格可消去两个，8 格可消去三个。分组必须是 <strong>1、2、4、8… 格的矩形</strong>，允许跨边界和重叠，但不能包含必须为 0 的格。每一个必须为 1 的格都要被覆盖。</p>
+<p>优先寻找大的组是好方法，但不能只靠贪心：“最大的一组先圈上”不总保证整体项数最少。最后要检查覆盖是否完整、是否有冗余，保留每组中不变的变量。</p><div class="lab" id="kmap-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>把真值表折成一张卡诺图</h3></div><span class="lab-chip">交互演示</span></div><p class="caption">列为 AB，行是 C，格内小字为最小项编号。按钮依次切换 0 → 1 → X；X 表示允许任意取值。默认是 Σm(3,5,7)。</p><div class="kmap-scroll"><table class="kmap-table"><thead><tr><th scope="col">C ＼ AB</th><th scope="col">00</th><th scope="col">01</th><th scope="col">11</th><th scope="col">10</th></tr></thead><tbody data-kmap-cells></tbody></table></div><div class="button-row"><button class="button button-small" data-kmap-reset type="button">恢复示例</button><button class="button button-small" data-kmap-wrap type="button">试试首尾相邻</button></div><p class="lab-result" data-result aria-live="polite"></p><div class="button-row" data-kmap-groups aria-label="选择要查看的覆盖组"></div><p class="caption" data-kmap-detail aria-live="polite"></p><p class="caption">求解器先最小化乘积项数，再最小化文字数，展示其中一种解。覆盖组允许重叠；点击组名查看覆盖格，无须从屏幕上圈的方向猜测。</p><p class="input-error" data-error role="alert" hidden></p></div>
+<h3>无关项 X 什么时候能用？</h3>
+<p>只有在输入组合确实不可达，或规范明确允许该组合输出任意值时，才能当作无关项。化简时可以把 X 选成 0 或 1 来帮助分组，也可以不用它；X 不等于电路里永远固定的 0。</p>
+<p>例如 4 位输入保证为合法 BCD 码 0000～1001，检测十进制偶数只需 <code>Y=¬D</code>，其中 D 为最低位。1010～1111 可以视为无关项。若非法 BCD 也可能输入且要求报错，就不能直接利用这个假设。</p>
+ <button type="button" class="complete-button" data-complete="karnaugh-map" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="arithmetic-circuits" data-section>
+ <div class="section-heading"><span class="section-index">04</span><div><div class="eyebrow">进位、减法与运算选择</div><h2>加法器与 ALU</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 70–77、98–100 页</p>
+ <p class="section-lead">全加器处理一位以及传来的进位，多位运算再把这些单元组织起来。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">电路</th><th scope="col">输入</th><th scope="col">和</th><th scope="col">进位</th></tr></thead><tbody><tr><th scope="row">半加器</th><td>A、B</td><td>S=A⊕B</td><td>C=AB</td></tr><tr><th scope="row">全加器</th><td>A、B、Cᵢ</td><td>S=A⊕B⊕Cᵢ</td><td>Cᵢ₊₁=AB+(A⊕B)Cᵢ</td></tr></tbody></table></div>
+<p>半加器没有进位输入，不能单独承担多位加法的中间位。全加器的进位也可以写成多数函数 <code>AB+ACᵢ+BCᵢ</code>，即三个输入中至少两个是 1。</p>
+<h3>串行进位与超前进位</h3>
+<p>脉动（串行）进位把低位进位接给高位，简单，但高位要等待进位逐级传播。超前进位把递推式展开，直接组合各位的生成、传递条件，减少逐位等待。</p>
+<div class="formula">Gᵢ=AᵢBᵢ，Pᵢ=Aᵢ⊕Bᵢ<br>Cᵢ₊₁=Gᵢ+PᵢCᵢ<br>C₂=G₁+P₁G₀+P₁P₀C₀<br>C₃=G₂+P₂G₁+P₂P₁G₀+P₂P₁P₀C₀</div>
+<p>本讲把 C₀ 叫最低位输入进位，C₄ 叫 4 位加法的输出进位；课件采用另一种下标习惯，逻辑相同。超前进位仍有门延迟，也要控制扇入与布线，不能理解为“所有进位瞬间产生”。</p>
+<h3>减法为什么能共用加法器？</h3>
+<p>在固定 n 位中，<code>A−B ≡ A+¬B+1（模 2ⁿ）</code>。设置模式位 M：每位 B 先与 M 异或，并令最低位输入进位为 M。M=0 做加法，M=1 做减法。</p><div class="lab" id="adder-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>沿着进位走完一次 4 位运算</h3></div><span class="lab-chip">交互演示</span></div><div class="lab-controls"><label>A（无符号 0～15）<input type="number" data-adder-a value="7" min="0" max="15" step="1"></label><label>B（无符号 0～15）<input type="number" data-adder-b value="9" min="0" max="15" step="1"></label><label>操作<select data-adder-mode><option value="add">A + B</option><option value="sub">A − B</option></select></label></div><div class="table-scroll"><table class="data-table compact"><thead><tr><th scope="col">位 i</th><th scope="col">Aᵢ</th><th scope="col">B′ᵢ</th><th scope="col">Cᵢ</th><th scope="col">Sᵢ</th><th scope="col">Cᵢ₊₁</th></tr></thead><tbody data-adder-table></tbody></table></div><p class="lab-result" data-result aria-live="polite"></p><p class="caption">表格从最低位向最高位排列；加法 B′=B、C₀=0，减法 B′=¬B、C₀=1。</p><p class="input-error" data-error role="alert" hidden></p></div>
+<h3>进位和溢出是不同判断</h3>
+<p>4 位无符号 7+9=16，低 4 位为 0000，C₄=1，表示超出无符号范围。若把同样的 4 位编码按有符号补码解释，则 1001 代表 −7，7+(−7)=0，没有有符号溢出。</p>
+<p>补码加法的溢出看“同号相加，结果变号”：例如 4 位 0111+0001=1000，7+1 超出 −8～7，虽然 C₄=0，仍有有符号溢出。减法则看两操作数异号且结果符号不同于 A。不能拿最高位进位代替这些条件。</p>
+<h3>ALU 进一步把多种运算放在一起</h3>
+<p>ALU 接收操作数与功能控制码，完成选定的加、减、按位与、或、异或、移位等操作。算术单元、逻辑单元和选择路径共同组成组合电路；<strong>ALU 本身不负责长期保存结果</strong>。</p>
+<p>课件实验还要求区分 ADD/ADDU、SUB/SUBU 的溢出处理，以及逻辑右移补 0、算术右移补符号位。这里先理解运算行为与选择关系；具体 6 位控制编码和 SN74181 引脚表在实现实验时再查，不能把实验 ALU 控制码当作完整 MIPS 指令编码。</p>
+ <button type="button" class="complete-button" data-complete="arithmetic-circuits" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="routing-circuits" data-section>
+ <div class="section-heading"><span class="section-index">05</span><div><div class="eyebrow">选择谁输出、写入谁</div><h2>译码器与选择器</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 78–83 页</p>
+ <p class="section-lead">译码器把编号变成“哪一路被选中”，选择器则把所选数据送到输出。</p>
+<div class="comparison-pair"><div><span class="mini-label">DECODER</span><h3>n 位编号 → 2ⁿ 路选择信号</h3><p>高有效、已使能的 2–4 译码器，输入 10 时令 Y₂=1，其余输出为 0。它可用于寄存器写入选择和存储器片选。</p></div><div><span class="mini-label">MULTIPLEXER / MUX</span><h3>2ⁿ 路数据 → 1 路输出</h3><p>4 选 1 MUX 用 2 个选择位，输入 10 时让输出 Y=D₂。选择线决定选谁，D₂ 的数值是什么由数据线决定。</p></div></div>
+<div class="formula">4 选 1：Y = ¬S₁¬S₀D₀ + ¬S₁S₀D₁ + S₁¬S₀D₂ + S₁S₀D₃</div>
+<p>公式逐位适用；若输入是 32 位数据总线，可理解为 32 个共享选择码的一位 MUX 并排工作。选择码宽度与数据宽度是两件事。</p><div class="lab" id="routing-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>同一个选择码，驱动两种不同功能</h3></div><span class="lab-chip">交互演示</span></div><div class="lab-controls"><label>选择码 S₁S₀<select data-route-select><option value="0">00 · 0</option><option value="1">01 · 1</option><option value="2" selected>10 · 2</option><option value="3">11 · 3</option></select></label><label>D0（8 位数据）<input type="number" data-route-d0 value="10" min="0" max="255" step="1"></label><label>D1（8 位数据）<input type="number" data-route-d1 value="20" min="0" max="255" step="1"></label><label>D2（8 位数据）<input type="number" data-route-d2 value="30" min="0" max="255" step="1"></label><label>D3（8 位数据）<input type="number" data-route-d3 value="40" min="0" max="255" step="1"></label></div><label class="check-label"><input data-route-enable type="checkbox" checked> 译码器使能（高有效）</label><div class="logic-strip" data-decoder aria-label="译码输出 Y0 到 Y3"></div><p class="lab-result" data-result aria-live="polite"></p><p class="input-error" data-error role="alert" hidden></p></div>
+<h3>实际芯片先看有效电平和使能</h3>
+<p>“恰好一路为 1”只适合已使能的高有效模型。课件的 74LS138 类器件采用<strong>低有效输出</strong>：选中那路为 0，其余为 1；未使能时全部为 1。使能端也可能有高有效和低有效两类，连接前要读符号与真值表。</p>
+<p>寄存器堆通常需要“两路读、一路写”：读端用选择器按来源编号选出数据，写端用译码与写使能只更新目的寄存器。第 3 章的 rs、rt、rd 正对应这些选择需求。</p>
+ <button type="button" class="complete-button" data-complete="routing-circuits" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="memory-and-codes" data-section>
+ <div class="section-heading"><span class="section-index">06</span><div><div class="eyebrow">容量、扩展、格雷码和奇偶校验</div><h2>存储器与可靠编码</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 84–97、143–146 页</p>
+ <p class="section-lead">先看有多少个地址、每个地址存多少位，再讨论容量和扩展。</p>
+<h3>ROM 可以看成按地址查表</h3>
+<p>n 位地址可选择 2ⁿ 个字，每字 w 位，容量为 <strong>2ⁿ×w 位</strong>。例如 10 位地址、每字 8 位，共 1024×8 bit = 1024 byte = 1 KiB。这里 K 按 1024 计算；bit 与 byte 差 8 倍。</p>
+<p>用 ROM 实现 0～15 的平方：4 位输入选 16 个表项，最大平方 225 需要 8 位输出，容量为 <strong>16×8=128 bit=16 byte</strong>。固定内容的异步读 ROM 可以实现组合函数，地址改变后经访问延迟得到输出。</p>
+<p>ROM 强调常规读出或预置内容，某些类型可以编程或重编程。RAM 强调按地址读写；本课程的 SRAM、DRAM 供电中保存数据，不能仅凭“RAM”三个字母推导所有存储技术都必然易失。RAM 的逻辑模型可看成字的集合，并非所有物理单元都用 D 触发器搭成。</p>
+<h3>存储容量怎样扩展？</h3><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">目标</th><th scope="col">连接方法</th><th scope="col">例子</th></tr></thead><tbody><tr><th scope="row">扩字长 / 位扩展</th><td>地址和控制并联，各芯片负责不同数据位</td><td>2 片 32K×8 → 32K×16</td></tr><tr><th scope="row">扩字数 / 地址扩展</th><td>低位地址并联，高位地址经译码选择芯片</td><td>4 片 32K×8 → 128K×8</td></tr><tr><th scope="row">同时扩展</th><td>两种方法组合；芯片数按两个方向相乘</td><td>8 片 32K×8 → 128K×16</td></tr></tbody></table></div>
+<p>32K 个字需要 15 位地址；128K 个字需要 17 位。上面的地址扩展示例使用新增的高 2 位决定四个芯片组中的哪一个，原低 15 位决定片内位置，不能让多个芯片同时驱动同一数据总线。</p>
+<h3>格雷码：相邻编码只变一位</h3>
+<p>二进制反射格雷码可由 <code>g=b⊕(b&gt;&gt;1)</code> 得到。三位序列为 000、001、011、010、110、111、101、100，相邻项只变一位，用于编码过渡或位置检测等。它本身不提供普遍的错误校正能力。</p>
+<h3>奇偶校验：用一个额外位约束 1 的个数</h3>
+<p>偶校验位等于所有数据位异或，使“数据+校验位”的 1 总数为偶数；奇校验则使总数为奇数。接收方重算就能发现所有奇数个位翻转，但可能漏掉偶数个位翻转，且不能仅凭一位奇偶校验定位错误。</p>
+<p>例如数据 1011 有三个 1，偶校验位应为 1。翻转任意一个位会破坏偶数条件；翻转两个位可能保持偶数而漏检。二维奇偶校验在“只有一个位出错”的假设下可用出错的行列交点定位，但矩形四角同时翻转等情况仍可能漏检。</p>
+ <button type="button" class="complete-button" data-complete="memory-and-codes" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="state-and-clock" data-section>
+ <div class="section-heading"><span class="section-index">07</span><div><div class="eyebrow">电路怎样记住状态</div><h2>锁存器、触发器与寄存器</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 101–121、138–142 页</p>
+ <p class="section-lead">组合逻辑只计算当前关系，时序逻辑还保存“此前发生过什么”。</p>
+<p>组合电路的稳定输出由当前输入决定。时序电路包含状态：<strong>次态 = f（现态，输入）</strong>。触发器保存一位，多个触发器可以组成寄存器；组合逻辑计算下一份要保存的数据。</p>
+<h3>RS 锁存器：利用反馈记住一位</h3>
+<p>课件用交叉耦合与非门构成基本 RS。输入 <code>/S</code> 与 <code>/R</code> 都低有效：/S=0 置位，/R=0 复位。两个输入都为 1 时保持原值；同时为 0 是禁止组合，两个输出都高，释放时不能保证进入哪个状态。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">/S</th><th scope="col">/R</th><th scope="col">Q 的行为</th></tr></thead><tbody><tr><th scope="row">1</th><td>1</td><td>保持</td></tr><tr><th scope="row">0</th><td>1</td><td>置 1</td></tr><tr><th scope="row">1</th><td>0</td><td>清 0</td></tr><tr><th scope="row">0</th><td>0</td><td>禁止使用，释放后的结果不确定</td></tr></tbody></table></div>
+<h3>D 锁存器与 D 触发器：区别在更新时间</h3>
+<div class="comparison-pair"><div><span class="mini-label">LEVEL-SENSITIVE LATCH</span><h3>电平敏感：使能期间透明</h3><p>高电平使能的 D 锁存器在使能为 1 时，Q 随 D 经延迟变化；使能为 0 时保存。不是只在上升沿采样一次。</p></div><div><span class="mini-label">EDGE-TRIGGERED FLIP-FLOP</span><h3>边沿触发：指定边沿采样</h3><p>D 触发器在指定时钟边沿保存 D，其余时间保持；可以设计为上升沿或下降沿。三角形表示时钟边沿，小圆圈还可表示反相。</p></div></div>
+<p>课件 114 页的“同步 D”电路是高电平透明结构，116–117 页展示下降沿结构，139 页寄存器则使用上升沿。读电路要看符号与触发条件，不能见到“D”就默认所有时刻的行为相同。</p><div class="lab" id="register-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>D 改了，Q 什么时候才改变？</h3></div><span class="lab-chip">交互演示</span></div><p class="caption">4 位上升沿触发寄存器，带写使能 CE 和低有效异步清零 /CLR。初始值由演示初始化为 0；真实硬件需按复位设计建立已知状态。</p><div class="lab-controls"><label>输入 D（0～15）<input type="number" data-register-d value="9" min="0" max="15" step="1"></label></div><div class="button-row"><label class="check-label"><input type="checkbox" data-register-enable checked> 写使能 CE=1</label><label class="check-label"><input type="checkbox" data-register-clear> 清零有效 /CLR=0</label></div><div class="register-view"><span>当前保存值 Q₃Q₂Q₁Q₀</span><strong data-register-q>0000 · 0</strong></div><button class="button button-primary" type="button" data-register-edge>产生一个上升沿 ↑</button><p class="lab-result" data-result aria-live="polite"></p><p class="input-error" data-error role="alert" hidden></p></div>
+<h3>其他触发器的行为先会查表</h3><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">类型</th><th scope="col">次态关系 / 行为</th><th scope="col">用途</th></tr></thead><tbody><tr><th scope="row">D</th><td>Q⁺=D（有效边沿时）</td><td>直接保存下一状态</td></tr><tr><th scope="row">JK</th><td>00 保持、01 清零、10 置位、11 翻转；Q⁺=J¬Q+¬KQ</td><td>便于部分状态转换设计</td></tr><tr><th scope="row">T</th><td>T=0 保持，T=1 翻转；Q⁺=Q⊕T</td><td>计数器</td></tr></tbody></table></div>
+<h3>寄存器与移位寄存器</h3>
+<p>4 个共享时钟的 D 触发器可同时保存一个 4 位字。并行装载一次保存全部位；移位则让各位从邻位取下一状态。</p>
+<p>明确按 <code>Q₃Q₂Q₁Q₀</code> 写出数值时，逻辑右移一位并从高位送入串行位 s：<code>Q⁺₃=s，Q⁺₂=Q₃，Q⁺₁=Q₂，Q⁺₀=Q₁</code>。例如旧值 1010、s=0，下一值是 0101。右侧全是<strong>同一边沿前的旧状态</strong>，不会在一个边沿把新值逐级传完。</p>
+<p>课件的图按器件在纸面上的方向称“左右移”，位编号排列可能与数值顺序相反。因此先写状态方程，再判断数值是左移还是右移。</p>
+ <button type="button" class="complete-button" data-complete="state-and-clock" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="state-machines" data-section>
+ <div class="section-heading"><span class="section-index">08</span><div><div class="eyebrow">从状态转移设计电路</div><h2>计数器与状态机</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 122–137 页</p>
+ <p class="section-lead">状态机把过去的信息压缩成有限状态，再由当前输入决定怎样前进。</p>
+<h3>分析一个时序电路的顺序</h3>
+<p>先确定触发边沿和各寄存器 → 从连线写次态方程 → 对所有现态计算次态和输出 → 画转移图 → 检查功能以及非法状态。输出只依赖状态称 Moore；同时依赖状态和输入称 Mealy。</p>
+<h3>计数器：把“下一步”写成状态转换</h3>
+<p>三位同步二进制计数器按 000→001→010→011→100→101→110→111→000 循环。用 T 触发器表达：<code>T₀=1，T₁=Q₀，T₂=Q₁Q₀</code>。在同一边沿前，低位全部为 1 才要求下一位翻转；所有触发器使用旧状态并行更新。</p>
+<p>课件另一个三位电路为 <code>Q⁺₂=Q₁，Q⁺₁=Q₀，Q⁺₀=¬Q₂</code>，形成 000→001→011→111→110→100→000 的六状态循环，属于扭环（Johnson）计数序列，相邻有效状态只变一位。它与标准三位二进制反射格雷码序列不同。</p>
+<p>若落入 010 或 101，则形成另一个两状态循环，不能自行进入上述六状态。<strong>自启动</strong>要求从非法状态也能返回有效循环；仅画有效状态就宣称电路正确是不够的。</p>
+<h3>设计一个“至少连续三个 1”检测器</h3>
+<p>不必保存输入过的全部历史，只需记住当前连续 1 的数量是 0、1，还是至少 2。已经有至少两个 1 时，再来一个 1 就输出 1；输入 0 时一律回到 S0 并输出 0。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">旧状态</th><th scope="col">输入 0：新状态 / 输出</th><th scope="col">输入 1：新状态 / 输出</th></tr></thead><tbody><tr><th scope="row">S0：连续 0 个 1</th><td>S0 / 0</td><td>S1 / 0</td></tr><tr><th scope="row">S1：连续 1 个 1</th><td>S0 / 0</td><td>S2 / 0</td></tr><tr><th scope="row">S2：连续至少 2 个 1</th><td>S0 / 0</td><td>S2 / 1</td></tr></tbody></table></div><div class="lab" id="fsm-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>连续三个或更多 1 的检测器</h3></div><span class="lab-chip">交互演示</span></div><p class="caption">每次按钮操作表示采样一个输入位。表格记录本次输入与旧状态决定的输出，然后更新状态；不是把更新后的状态再次用于同一次采样。</p><div class="state-strip"><div data-fsm-state="0" class="logic-cell selected"><strong>S0</strong><small>连续 0 个 1</small></div><div data-fsm-state="1" class="logic-cell"><strong>S1</strong><small>连续 1 个 1</small></div><div data-fsm-state="2" class="logic-cell"><strong>S2</strong><small>连续至少 2 个 1</small></div></div><div class="button-row"><button type="button" class="button" data-fsm-input="0">输入 0 →</button><button type="button" class="button button-primary" data-fsm-input="1">输入 1 →</button><button type="button" class="button button-quiet" data-fsm-reset>重置</button></div><div class="table-scroll"><table class="data-table compact"><thead><tr><th scope="col">次序</th><th scope="col">旧状态</th><th scope="col">输入</th><th scope="col">新状态</th><th scope="col">本次输出</th></tr></thead><tbody data-fsm-history></tbody></table></div><p class="lab-result" data-result aria-live="polite"></p><p class="caption">最多记录 64 位，表格显示最近 12 次；完整输入输出保留在结果文字中。</p><p class="input-error" data-error role="alert" hidden></p></div>
+<p>1111 的输出是 0011，包含重叠检测；遇到 0 后需要重新积累。采用 S0=00、S1=01、S2=10，只需要两位状态。S2 与“已有至少三个 1”状态在将来输入下具有相同输出和转移行为，因此可以合并。</p>
+<p>从需求设计电路时按“定义状态 → 画转移 → 合并等价状态 → 编码 → 写次态和输出 → 选择触发器实现 → 检查非法状态”推进。课件用 JK 触发器实现，若用 D 触发器，直接把所求次态接到 D 即可；编码不同，具体方程也会不同。</p>
+ <button type="button" class="complete-button" data-complete="state-machines" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="datapath-timing" data-section>
+ <div class="section-heading"><span class="section-index">09</span><div><div class="eyebrow">让正确的数据在正确时刻写入</div><h2>数据通路与时序</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 147–151 页</p>
+ <p class="section-lead">寄存器提供当前数据，组合电路计算下一数据，时钟边沿把它保存起来。</p>
+<div class="flow-diagram"><span>源寄存器<small>时钟后输出旧状态</small></span><b aria-hidden="true">→</b><span>选择器<small>按来源编号取数</small></span><b aria-hidden="true">→</b><span>ALU<small>受功能控制计算</small></span><b aria-hidden="true">→</b><span>目的寄存器<small>下一有效边沿写入</small></span></div>
+<p>以 <code>add $t2,$t0,$t1</code> 为例，两个读选择码指定 $t0、$t1，ALU 控制选择加法，写选择码指向 $t2，并打开写使能。在结果稳定且满足时序条件之后，目的寄存器才在有效边沿保存它。</p>
+<h3>为什么不能让时钟无限快？</h3>
+<p>源触发器在时钟边沿后，输出经 clock-to-Q 延迟才变化；选择器、ALU 和连线还需要传播时间；目的触发器在下一边沿之前要求输入提前稳定一段<strong>建立时间</strong>，边沿之后还要保持一段<strong>保持时间</strong>。</p>
+<div class="timing-flow"><div><span>边沿 ①</span><strong>源 Q 变化</strong><small>clock-to-Q</small></div><span aria-hidden="true">→</span><div><span>周期内</span><strong>选择与运算</strong><small>组合路径延迟</small></div><span aria-hidden="true">→</span><div><span>边沿 ② 前</span><strong>结果稳定</strong><small>满足建立时间</small></div></div>
+<div class="formula">简化的最小时钟周期 ≥ t_clk→Q,max + t_logic,max + t_setup</div>
+<p>这个关系忽略时钟偏斜和抖动等因素，用来理解最长路径限制主频。保持约束关注最短路径，不能只靠降低频率解决；实际触发器还有最小时钟脉宽等要求。课件“控制信号越短越好”应理解为避免不必要占用，同时仍必须满足器件时序条件。</p>
+<h3>用三句话把前后章节连起来</h3>
+<ol class="concept-steps"><li>第 1 章给出 <strong>时间 = 周期数 × 周期长度</strong>，本节说明周期长度为何有下限。</li><li>本章的门、选择器和加法器负责计算；触发器、寄存器负责记住状态。</li><li>第 3 章的指令编码给出“操作什么、取谁、写谁”；控制器把这些信息变成电路的控制信号。</li></ol>
+<p>到这里再看单周期 CPU 大图，就可以先找寄存器边界，再沿组合路径追踪数据，而不是对着所有线同时猜。</p>
+ <button type="button" class="complete-button" data-complete="datapath-timing" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="digital-practice" data-section>
+ <div class="section-heading"><span class="section-index">10</span><div><div class="eyebrow">把逻辑、状态与时序串起来</div><h2>数电综合自测</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 4–151 页</p>
+ <p class="section-lead">先辨清信号的含义，再列公式或状态转移。</p><form id="lesson-quiz" class="quiz-form"><p>先独立作答，再检查解释。数值题只填数值，支持小数。</p><fieldset class="quiz-question" data-answer="0" data-answer-type="number" data-explanation="异或在输入不同时为 1，相同时为 0。"><legend><span>01</span> A=1、B=1，A⊕B 等于多少？</legend><label class="quiz-number-label">你的答案<input type="text" name="q1" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="demorgan" data-answer-type="choice" data-explanation="德摩根定律：整体与取反等于分别取反再相或。"><legend><span>02</span> ¬(AB) 等价于哪个式子？</legend><label class="quiz-option"><input type="radio" name="q2" value="demorgan"> ¬A+¬B</label><label class="quiz-option"><input type="radio" name="q2" value="both"> ¬A¬B</label><label class="quiz-option"><input type="radio" name="q2" value="same"> A+B</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="101" data-answer-type="choice" data-explanation="5 的三位二进制为 101，对应 A¬BC。"><legend><span>03</span> ABC 为变量顺序，最小项 m₅ 对应哪一种输入？</legend><label class="quiz-option"><input type="radio" name="q3" value="101"> 101</label><label class="quiz-option"><input type="radio" name="q3" value="011"> 011</label><label class="quiz-option"><input type="radio" name="q3" value="110"> 110</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="2" data-answer-type="number" data-explanation="4=2²，覆盖全部组合的两个变化变量被消去，保留固定变量。"><legend><span>04</span> 三变量卡诺图中，4 个合法相邻格合并，可消去几个变化变量？</legend><label class="quiz-number-label">你的答案<input type="text" name="q4" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="1" data-answer-type="number" data-explanation="1+1+1 的二进制为 11，S=1，输出进位也为 1。"><legend><span>05</span> 全加器 A=B=Cᵢ=1 时，和 S 是多少？</legend><label class="quiz-number-label">你的答案<input type="text" name="q5" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="0" data-answer-type="number" data-explanation="16 的编码为 10000，低 4 位为 0000，最高位进位单独为 1。"><legend><span>06</span> 4 位 7+9，只保留低 4 位，用无符号数读出结果是多少？</legend><label class="quiz-number-label">你的答案<input type="text" name="q6" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="2" data-answer-type="number" data-explanation="2²=4，2 位选择码指定四路之一，数据总线宽度另算。"><legend><span>07</span> 4 选 1 MUX 需要几位二进制选择码？</legend><label class="quiz-number-label">你的答案<input type="text" name="q7" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="1024" data-answer-type="number" data-explanation="2¹⁰×8 bit = 1024 byte。"><legend><span>08</span> 10 位地址、每字 8 位的存储器，容量是多少字节？</legend><label class="quiz-number-label">你的答案<input type="text" name="q8" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="8" data-answer-type="number" data-explanation="地址方向扩展 4 倍，数据宽度扩展 2 倍，总共 4×2=8 片。"><legend><span>09</span> 用 32K×8 的芯片组成 128K×16，需要几片？</legend><label class="quiz-number-label">你的答案<input type="text" name="q9" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="no" data-answer-type="choice" data-explanation="偶数个翻转可能保留原来的奇偶性；单独一位奇偶校验也无法定位错误。"><legend><span>10</span> 一位偶校验能保证发现任意两个位翻转吗？</legend><label class="quiz-option"><input type="radio" name="q10" value="yes"> 能</label><label class="quiz-option"><input type="radio" name="q10" value="no"> 不能</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="hold" data-answer-type="choice" data-explanation="理想逻辑模型中，Q 等到有效上升沿才采样；D 锁存器在使能时则可透明。"><legend><span>11</span> 上升沿 D 触发器、写使能开、清零无效：两个边沿之间 D 改变时，Q 怎样？</legend><label class="quiz-option"><input type="radio" name="q11" value="follow"> 立即跟随 D</label><label class="quiz-option"><input type="radio" name="q11" value="hold"> 保持，等待有效边沿</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="5" data-answer-type="number" data-explanation="下一值是 0101，即 5；每一位取边沿前的旧邻位。"><legend><span>12</span> 右移模型按 Q₃Q₂Q₁Q₀ 写字，旧值 1010，高位补 0，右移后无符号值是多少？</legend><label class="quiz-number-label">你的答案<input type="text" name="q12" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="0011" data-answer-type="choice" data-explanation="第 3 个 1 和第 4 个 1 都满足至少连续三个 1，允许重叠检测。"><legend><span>13</span> 从复位开始，连续三个或更多 1 检测器输入 1111，每次采样输出依次为？</legend><label class="quiz-option"><input type="radio" name="q13" value="0011"> 0011</label><label class="quiz-option"><input type="radio" name="q13" value="0001"> 0001</label><label class="quiz-option"><input type="radio" name="q13" value="0010"> 0010</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="longer" data-answer-type="choice" data-explanation="最长路径需要更多时间，满足建立约束的周期下限增大；最大频率下降。"><legend><span>14</span> 组合路径最大延迟增加、其他量不变，允许的最小时钟周期应如何变化？</legend><label class="quiz-option"><input type="radio" name="q14" value="shorter"> 缩短</label><label class="quiz-option"><input type="radio" name="q14" value="longer"> 延长</label><label class="quiz-option"><input type="radio" name="q14" value="same"> 一定不变</label><p class="quiz-feedback" hidden></p></fieldset><div class="quiz-actions"><button class="button button-primary" type="submit">检查答案 ↗</button><button class="button button-quiet" type="reset">重新练习</button></div><p class="quiz-score" data-quiz-score aria-live="polite">共 14 题，答案只保存在当前浏览器。</p></form><div class="note"><strong>掌握的标准</strong><p>你能从真值表搭组合功能，能按旧状态算出次态，能解释数据为什么要等时钟边沿写入。器件型号和引脚号需要时查阅即可。</p></div>
+ <button type="button" class="complete-button" data-complete="digital-practice" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>

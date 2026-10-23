@@ -1,3 +1,5 @@
+import { initFoundationLabs } from './foundations.js';
+import { decimal } from './foundations-core.js';
 import { registerNames, parseInteger, parseHex, hex, branchTarget, jumpTarget, wordBytes, arrayAddress, encodeInstruction, simulationTrace } from './core.js';
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -212,7 +214,7 @@ function initQuiz() {
       if (raw) {
         attempted++;
         try {
-          valid = field.dataset.answerType === 'hex' ? parseHex(raw) === parseHex(field.dataset.answer) : field.dataset.answerType === 'number' ? parseInteger(raw) === Number(field.dataset.answer) : raw === field.dataset.answer;
+          valid = field.dataset.answerType === 'hex' ? parseHex(raw) === parseHex(field.dataset.answer) : field.dataset.answerType === 'decimal' ? Math.abs(decimal(raw, -1e12) - Number(field.dataset.answer)) <= 1e-6 * Math.max(1, Math.abs(Number(field.dataset.answer))) : field.dataset.answerType === 'number' ? parseInteger(raw) === Number(field.dataset.answer) : raw === field.dataset.answer;
         } catch { valid = false; }
       }
       if (valid) correct++;
@@ -241,3 +243,5 @@ initEncoder();
 initArray();
 initBranch();
 initQuiz();
+
+initFoundationLabs();

@@ -1,0 +1,89 @@
+<div class="chapter-intro"><span class="intro-symbol" aria-hidden="true">↳</span><p><strong>先回答两个问题：计算机怎样把程序跑起来？怎样判断它跑得好不好？</strong> 本章分 6 节，建议分两次学习：先学组成、执行与设计思路，再集中练性能计算。课程安排、考核比例与型号年表略去。</p></div>
+
+<section class="lesson-section" id="system-map" data-section>
+ <div class="section-heading"><span class="section-index">01</span><div><div class="eyebrow">存储程序与五大部件</div><h2>计算机如何组成</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 13–31 页</p>
+ <p class="section-lead">程序给出步骤，硬件依照这些步骤搬运、计算和保存数据。</p>
+<h3>先记住五个功能部件</h3><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">部件</th><th scope="col">负责什么</th><th scope="col">与已学知识的联系</th></tr></thead><tbody><tr><th scope="row">运算器</th><td>完成算术、逻辑、比较等操作</td><td>ALU 计算两个寄存器数据的和</td></tr><tr><th scope="row">控制器</th><td>解释指令，组织各部件按正确步骤工作</td><td>选择 ALU 操作，决定寄存器是否写入</td></tr><tr><th scope="row">存储器</th><td>保存指令和数据</td><td>通过地址读取机器指令或数组元素</td></tr><tr><th scope="row">输入设备</th><td>把外部信息送入系统</td><td>键盘、传感器等通过接口接入</td></tr><tr><th scope="row">输出设备</th><td>把处理结果交给外部</td><td>显示器、执行机构等接收结果</td></tr></tbody></table></div>
+<p>CPU 的核心由<strong>控制器和数据通路</strong>组成。数据通路包括 ALU、寄存器及连接它们的通路；“运算器”是五大部件中的功能分类，不能理解为 CPU 只有一个加法器。主存和 CPU 内部的寄存器也不是同一层存储。</p>
+<div class="system-map" role="img" aria-label="输入和输出连接主存与 CPU；CPU 内含控制器和数据通路，控制器发出控制信号，数据通路进行运算"><div>输入 / 输出<small>与外部交换信息</small></div><span aria-hidden="true">↔</span><div>主存<small>程序 + 数据</small></div><span aria-hidden="true">↔</span><div class="cpu-box"><strong>CPU</strong><span>控制器 → 数据通路</span><small>PC · 寄存器 · ALU</small></div></div>
+<p class="caption">这是功能关系图，实际系统还包括缓存、总线与设备控制器。箭头概括数据交换，不代表所有数据经过同一根物理导线。</p>
+<h3>必要的发展史：为什么“存储程序”重要？</h3>
+<p>早期机器常靠接线或开关改变运算任务。存储程序思想把<strong>指令编码后放入存储器</strong>，由机器按地址取出并执行。改变内存中的程序，就能安排新的运算步骤。重点是这种组织方式，不必背机器型号和“第一台”的归属。</p>
+<p>指令和数据都可以表现为二进制位，CPU 按执行位置和指令语义解释它们。“存储程序”也不意味着所有现代机器都只有一个物理存储体：指令缓存和数据缓存可以分开。</p>
+<h3>为什么需要多层存储？</h3>
+<p>寄存器、缓存、主存和外部存储，在速度、容量和成本间折中。通常越靠近执行部件，容量越小、访问越快；越远则容量更大。缓存保存主存内容的副本，利用<strong>时间局部性</strong>（刚用过的还可能用）和<strong>空间局部性</strong>（邻近位置可能接着用）。</p>
+<p>SRAM 常用于缓存，DRAM 常用于主存，两者都需要供电保持数据。DRAM 还需要刷新；外部存储常用非易失介质。缓存不是另一个由程序员逐项手工搬运的数组。</p>
+ <button type="button" class="complete-button" data-complete="system-map" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="program-journey" data-section>
+ <div class="section-heading"><span class="section-index">02</span><div><div class="eyebrow">工具链、ISA 与取指执行</div><h2>程序怎样执行</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 32–35 页</p>
+ <p class="section-lead">高级语言先被转换为可执行指令，CPU 再按指令规定的行为工作。</p>
+<div class="flow-diagram"><span>源程序<small>C 等语言</small></span><b aria-hidden="true">→</b><span>编译 / 汇编<small>生成目标文件</small></span><b aria-hidden="true">→</b><span>链接<small>合并代码和库</small></span><b aria-hidden="true">→</b><span>装载与执行<small>进入运行环境</small></span></div>
+<p><strong>编译器</strong>把高级语言转换为较低层表示；<strong>汇编器</strong>把汇编指令编码为目标代码；<strong>链接器</strong>合并目标文件和所需库、解析符号；<strong>装载器</strong>把程序映射进运行环境，准备开始执行。实际编译器也可以直接生成目标文件，不必把汇编文本写到磁盘。</p>
+<h3>ISA 是软硬件之间的约定</h3>
+<p>ISA 规定程序可见的指令、寄存器、编码和行为。微体系结构决定这些行为怎样由流水线、ALU、缓存等电路实现。同一套 ISA 可以由不同的处理器实现，执行相同程序所需的周期数也可以不同。</p>
+<h3>把一次取指与执行走完整</h3>
+<ol class="concept-steps"><li><strong>取指：</strong>PC 给出指令地址，CPU 取得机器指令。</li><li><strong>译码与取操作数：</strong>判断操作类型，读取需要的寄存器或常数。</li><li><strong>执行：</strong>做运算、比较或地址计算；必要时访问数据存储器。</li><li><strong>保存结果并决定后继：</strong>需要写回才写寄存器或内存，按顺序、分支或跳转规则确定下一条指令。</li></ol>
+<p>这些是<strong>逻辑步骤</strong>，并不规定“一步必须占一个时钟周期”。不同 CPU 可以在一个长周期中完成一条指令，也可以让多条指令的不同阶段重叠。</p>
+<pre class="code-block"><code>add $t2, $t0, $t1
+# 取指 → 读 $t0、$t1 → ALU 相加 → 写 $t2</code></pre>
+<p>这条 add 的普通执行结果写入寄存器，不会因此自动改写主存。经典 MIPS 指令占 4 字节，顺序后继通常是 PC+4；转移与延迟槽的具体规则见<a class="text-link" href="/lessons/instructions-and-assembly/#control-flow">第 3 章</a>。</p>
+ <button type="button" class="complete-button" data-complete="program-journey" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="design-ideas" data-section>
+ <div class="section-heading"><span class="section-index">03</span><div><div class="eyebrow">抽象、常见情况与并行</div><h2>设计中的八个思路</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 13–16、29 页</p>
+ <p class="section-lead">知道这些思路要解决什么问题，比背八条名称更重要。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">思路</th><th scope="col">解决的问题与例子</th></tr></thead><tbody><tr><th scope="row">面向摩尔定律的设计</th><td>把集成度增长作为历史背景，规划更复杂的功能。它是经验趋势，不是“每隔一段时间主频必翻倍”的物理定律。</td></tr><tr><th scope="row">使用抽象</th><td>在当前层只关心接口。例如写 add 不必知道每个晶体管怎样导通。</td></tr><tr><th scope="row">加速常见情况</th><td>常走的路径优化收益往往更大；收益仍由实际耗时比例决定。</td></tr><tr><th scope="row">并行</th><td>用多个资源同时处理不同工作，例如两个独立加法交给两个运算单元。</td></tr><tr><th scope="row">流水线</th><td>把任务分阶段，不同任务在不同阶段同时推进，提高稳定运行时的完成速率。</td></tr><tr><th scope="row">预测</th><td>在结果确定前先按预测推进；判断错误需要恢复并付出代价。</td></tr><tr><th scope="row">存储层次</th><td>用小而快的近端存储与大而慢的远端存储配合。</td></tr><tr><th scope="row">冗余提高可靠性</th><td>增加校验或备份来发现、容忍部分故障；代价是额外资源。</td></tr></tbody></table></div>
+<h3>并行与流水线：先分清“同时干什么”</h3>
+<p>并行强调多个资源同时工作；流水线强调阶段的重叠。例如洗衣、烘干、折叠各需 10 分钟：一批衣物仍需 30 分钟，理想流水线填满后却可每 10 分钟完成一批。它提升吞吐率，并不保证单个任务的延迟缩短。</p>
+<div class="note"><strong>不要提前背完整 CPU 线路图。</strong><p>现在只需要认出“保存状态、做组合运算、选择路径、发出控制”。第 2 章建立电路积木，再回来读整机数据通路。</p></div>
+ <button type="button" class="complete-button" data-complete="design-ideas" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="performance" data-section>
+ <div class="section-heading"><span class="section-index">04</span><div><div class="eyebrow">执行时间、指令数与 CPI</div><h2>怎样比较性能</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 36–50 页</p>
+ <p class="section-lead">对某个任务，执行时间越短，性能越好。主频只是影响时间的一个因素。</p><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">指标</th><th scope="col">含义</th><th scope="col">比较时注意</th></tr></thead><tbody><tr><th scope="row">响应时间 / 延迟</th><td>完成一次任务要多久</td><td>包含 CPU、等待、I/O 等总开销；CPU 时间只统计 CPU 工作时间</td></tr><tr><th scope="row">吞吐率</th><td>单位时间完成多少任务</td><td>同时跑更多任务可能提高吞吐，但单次延迟未必变短</td></tr><tr><th scope="row">某任务的性能</th><td>通常用 1 / 执行时间表示</td><td>A 相对 B 的加速比 = T_B / T_A</td></tr></tbody></table></div>
+<p>A 完成同一任务要 10 秒，B 要 15 秒，则 A 的性能是 B 的 1.5 倍。A 的时间减少了 1/3，性能提高了 50%；两个百分比使用的分母不同。</p>
+<h3>最重要的一条公式</h3>
+<div class="formula">CPU 时间 = 时钟周期数 × 周期长度<br>= 动态指令数 IC × 平均 CPI ÷ 时钟频率 f</div>
+<p><strong>IC</strong> 是实际执行的指令次数：循环体同一条指令执行 100 次，就计 100 条。<strong>CPI</strong> 是平均每条指令消耗的周期数；频率 f 表示每秒多少周期。1 GHz = 10⁹ 周期/秒，1 ns = 10⁻⁹ 秒。250 ps 的周期对应 4 GHz。</p>
+<p>若 IC = 10⁹、平均 CPI = 1.5、f = 3 GHz，则总周期数是 1.5×10⁹，CPU 时间是 <strong>0.5 秒</strong>。在同一统计口径下 IPC = 1/CPI；能重叠或同时完成多条指令的处理器可以出现平均 CPI 小于 1。</p>
+<h3>CPI 要按实际执行次数加权</h3>
+<div class="formula">总周期数 = Σ（第 i 类指令数 × 该类 CPI）<br>平均 CPI = 总周期数 ÷ 总指令数 = Σ（比例ᵢ × CPIᵢ）</div><div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">序列</th><th scope="col">A 类 / B 类 / C 类数量</th><th scope="col">总指令数</th><th scope="col">总周期数</th><th scope="col">平均 CPI</th></tr></thead><tbody><tr><th scope="row">每类 CPI</th><td>1 / 2 / 3</td><td>—</td><td>—</td><td>—</td></tr><tr><th scope="row">序列 1</th><td>2 / 1 / 2</td><td>5</td><td>2×1+1×2+2×3 = 10</td><td>2</td></tr><tr><th scope="row">序列 2</th><td>4 / 1 / 1</td><td>6</td><td>4×1+1×2+1×3 = 9</td><td>1.5</td></tr></tbody></table></div>
+<p>同一 CPU、频率相同时，序列 2 虽多执行一条指令，却只需 9 个周期，比序列 1 的 10 个周期快。不要只比指令数，也不要只比 CPI。</p><div class="lab" id="performance-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>主频高，就一定更快吗？</h3></div><span class="lab-chip">交互演示</span></div><p class="caption">两个方案运行同一任务。IC 的单位为百万条，频率单位为 GHz，比较 CPU 执行时间。</p><div class="performance-inputs"><fieldset><legend>方案 A</legend><div class="lab-controls"><label>动态指令数（百万条）<input type="number" data-a-ic value="1000" min="1e-06" max="1000000000000.0" step="any"></label><label>平均 CPI<input type="number" data-a-cpi value="1.5" min="1e-06" max="1000000" step="any"></label><label>频率（GHz）<input type="number" data-a-ghz value="3" min="1e-06" max="1000000" step="any"></label></div></fieldset><fieldset><legend>方案 B</legend><div class="lab-controls"><label>动态指令数（百万条）<input type="number" data-b-ic value="1000" min="1e-06" max="1000000000000.0" step="any"></label><label>平均 CPI<input type="number" data-b-cpi value="1" min="1e-06" max="1000000" step="any"></label><label>频率（GHz）<input type="number" data-b-ghz value="1.5" min="1e-06" max="1000000" step="any"></label></div></fieldset></div><div class="result-pair" data-perf-times aria-live="polite"></div><p class="lab-result" data-result aria-live="polite"></p><p class="input-error" data-error role="alert" hidden></p></div>
+<h3>怎样做公平比较？</h3>
+<p>固定任务、输入与统计范围，再一起考虑 IC、CPI 和 f。算法和编译器会改变指令数及指令组合；缓存、流水线、内存等待会改变 CPI；结构复杂度也会限制频率。这三个量往往相互影响。</p>
+<p>对多个常用任务，应按真实运行次数统计总时间：Σ（任务次数 × 单次时间）。一个只在某类测试上领先的机器，不一定对你的工作负载更快。课件的 SPEC 表格用于理解基准测试方法，旧型号与分数不作为当前选型结论。MIPS 也可表示“百万条指令/秒”的速率，这与本课 MIPS 指令集名称是两回事，跨 ISA 直接比较该速率容易误导。</p>
+ <button type="button" class="complete-button" data-complete="performance" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="limits-and-tradeoffs" data-section>
+ <div class="section-heading"><span class="section-index">05</span><div><div class="eyebrow">Amdahl 定律、功耗和成本</div><h2>加速的边界与代价</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 51–54 页</p>
+ <p class="section-lead">性能优化要看全局收益，还要付出功耗、面积与成本。</p>
+<h3>Amdahl 定律：未优化部分成为瓶颈</h3>
+<p>原程序耗时为 T，其中比例 p 的部分被加速 s 倍，其余不变。优化后的时间为 T×[(1−p)+p/s]。</p>
+<div class="formula">整体加速比 S = 1 / [(1 − p) + p / s]</div>
+<p>原来 100 秒，80 秒可优化、20 秒不变；该部分加速 4 倍后需要 20 秒，总时间变成 40 秒，整体只加速 <strong>2.5 倍</strong>。即使那 80 秒趋近于 0，总时间也只能趋近 20 秒，整体加速比趋近 5。</p><div class="lab" id="amdahl-lab"><div class="lab-heading"><div><span class="lab-label">动手推演</span><h3>把一部分变快，整机能快多少？</h3></div><span class="lab-chip">交互演示</span></div><div class="lab-controls"><label>原耗时中可优化的比例 p（%）<input type="range" data-amdahl-p min="0" max="100" value="80" step="1"><output data-amdahl-p-label>80%</output></label><label>该部分加速倍数 s<input type="number" data-amdahl-s value="4" min="1" max="1000000" step="any"></label></div><div class="time-comparison" data-amdahl-bars></div><p class="lab-result" data-result aria-live="polite"></p><p class="caption">假设任务不变，只改变指定部分；p 按优化前的时间计算。图中长度统一以原先 100 秒为基准。</p><p class="input-error" data-error role="alert" hidden></p></div>
+<p>所以 p=80% 时，“整体加速到 5 倍”没有有限的局部加速解。若 p=90%，目标整体 5 倍，则 0.1+0.9/s=0.2，得到 s=9。先找耗时的大头，再谈优化。</p>
+<h3>功率与能量要分开</h3>
+<div class="formula">动态功率 P_dyn ≈ α × C × V² × f<br>能量 E = 平均功率 P × 执行时间 T</div>
+<p>α 表示有效翻转活动，C 是等效开关电容，V 是供电电压，f 是相关时钟频率。在其他量不变的近似下，频率翻倍使动态功率翻倍，电压翻倍则使其变为 4 倍。实际芯片还有泄漏等静态功耗，升频也可能需要升压。</p>
+<p>降低电压能明显降低动态功率，却也影响电路延迟。完成任务更快是否更节能，需要一起看功率与时间；不能仅凭某一时刻功率小就判断总能耗低。</p>
+<h3>芯片为什么会有面积与良率的代价？</h3>
+<p>晶圆制造 → 切割出裸片 → 测试与封装。粗略地看，<strong>合格裸片的平均成本 ≈ 晶圆成本 ÷（每片晶圆的裸片数 × 良率）</strong>。裸片更大，同一晶圆能切出的数量减少，单片遇到缺陷的机会通常也更高。实际总成本还包括测试、封装和研发等。</p>
+<p>增加缓存或执行单元可能提高性能，也增加面积和功耗。CPU 设计是在特定工作负载和约束下取舍，不存在只增性能、完全没有代价的普遍方案。</p>
+ <button type="button" class="complete-button" data-complete="limits-and-tradeoffs" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="overview-practice" data-section>
+ <div class="section-heading"><span class="section-index">06</span><div><div class="eyebrow">用数字检验理解</div><h2>概述自测</h2></div></div>
+ <p class="source-pages">对应课件 PDF 第 40–56 页</p>
+ <p class="section-lead">会从公式判断条件，才算真正理解“快”。</p><form id="lesson-quiz" class="quiz-form"><p>先独立作答，再检查解释。数值题只填数值，支持小数。</p><fieldset class="quiz-question" data-answer="cpu" data-answer-type="choice" data-explanation="PC 给出取指位置，CPU 取得并解释指令。程序不会由编译器在运行时逐条替 CPU 执行。"><legend><span>01</span> 程序指令主要由谁按地址取得并解释？</legend><label class="quiz-option"><input type="radio" name="q1" value="cpu"> CPU</label><label class="quiz-option"><input type="radio" name="q1" value="compiler"> 编译器</label><label class="quiz-option"><input type="radio" name="q1" value="display"> 显示器</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="no" data-answer-type="choice" data-explanation="ISA 约定可见行为，具体电路实现不同，周期数可以不同。"><legend><span>02</span> 同一 ISA 的两种 CPU 实现，平均 CPI 必须相同吗？</legend><label class="quiz-option"><input type="radio" name="q2" value="yes"> 必须相同</label><label class="quiz-option"><input type="radio" name="q2" value="no"> 可以不同</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="no" data-answer-type="choice" data-explanation="主存写入需要对应的存储操作；寄存器写入本身不自动写回变量位置。"><legend><span>03</span> 一条普通 add 把结果写入寄存器后，是否自动更新同名变量原来的主存位置？</legend><label class="quiz-option"><input type="radio" name="q3" value="yes"> 会自动更新</label><label class="quiz-option"><input type="radio" name="q3" value="no"> 不会自动更新</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="4" data-answer-type="decimal" data-explanation="f = 1/(250×10⁻¹²) = 4×10⁹ Hz，即 4 GHz。"><legend><span>04</span> 周期为 250 ps，对应频率是多少 GHz？</legend><label class="quiz-number-label">你的答案<input type="text" name="q4" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer=".5" data-answer-type="decimal" data-explanation="T = 10⁹×1.5/(3×10⁹) = 0.5 秒。"><legend><span>05</span> 10 亿条动态指令、平均 CPI=1.5、3 GHz，CPU 时间是多少秒？</legend><label class="quiz-number-label">你的答案<input type="text" name="q5" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="2" data-answer-type="decimal" data-explanation="平均 CPI = 0.5×1+0.5×3 = 2。"><legend><span>06</span> 两类指令各占 50%，CPI 分别为 1 和 3，平均 CPI 是多少？</legend><label class="quiz-number-label">你的答案<input type="text" name="q6" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="1.5" data-answer-type="decimal" data-explanation="性能比 = T_B/T_A = 15/10 = 1.5。"><legend><span>07</span> A 耗时 10 秒，B 耗时 15 秒，A 的性能是 B 的多少倍？</legend><label class="quiz-number-label">你的答案<input type="text" name="q7" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="2.5" data-answer-type="decimal" data-explanation="S = 1/(0.2+0.8/4) = 2.5。"><legend><span>08</span> 原耗时 80% 的部分加速 4 倍，整体加速多少倍？</legend><label class="quiz-number-label">你的答案<input type="text" name="q8" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer="no" data-answer-type="choice" data-explanation="流水线提高稳定运行时的吞吐率，单个任务的阶段总耗时不一定缩短。"><legend><span>09</span> 理想流水线一定缩短单条任务从开始到结束的延迟吗？</legend><label class="quiz-option"><input type="radio" name="q9" value="yes"> 一定</label><label class="quiz-option"><input type="radio" name="q9" value="no"> 不一定</label><p class="quiz-feedback" hidden></p></fieldset><fieldset class="quiz-question" data-answer=".25" data-answer-type="decimal" data-explanation="P_dyn 与 V² 成正比，(1/2)² = 0.25。总功率还可能含静态部分。"><legend><span>10</span> 电容、翻转活动与频率不变，电压变为原来的 1/2，动态功率是原来的多少？</legend><label class="quiz-number-label">你的答案<input type="text" name="q10" inputmode="decimal" autocomplete="off" placeholder="填入数值"></label><p class="quiz-feedback" hidden></p></fieldset><div class="quiz-actions"><button class="button button-primary" type="submit">检查答案 ↗</button><button class="button button-quiet" type="reset">重新练习</button></div><p class="quiz-score" data-quiz-score aria-live="polite">共 10 题，答案只保存在当前浏览器。</p></form><div class="note"><strong>下一步：把 CPU 拆到电路层。</strong><p>第 2 章先学逻辑门与组合电路，再学保存状态。读到 ALU 和寄存器时，回想本章“运算”和“保存结果”两件事。</p></div>
+ <button type="button" class="complete-button" data-complete="overview-practice" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>

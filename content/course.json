@@ -4,6 +4,143 @@
   "repository": "https://github.com/luchen022/processor-design-guide",
   "lessons": [
     {
+      "slug": "computer-systems-overview",
+      "chapter": "01",
+      "title": "计算机系统概述",
+      "description": "看清计算机的组成、程序的执行过程，以及性能、功耗与成本之间的关系。",
+      "file": "01-overview.html",
+      "source": "1 概述 .pdf",
+      "sourcePages": 56,
+      "updated": "2026-10-23",
+      "kicker": "建立整机视角",
+      "sections": [
+        {
+          "id": "system-map",
+          "title": "计算机如何组成",
+          "description": "存储程序与五大部件",
+          "pages": "13–31"
+        },
+        {
+          "id": "program-journey",
+          "title": "程序怎样执行",
+          "description": "工具链、ISA 与取指执行",
+          "pages": "32–35"
+        },
+        {
+          "id": "design-ideas",
+          "title": "设计中的八个思路",
+          "description": "抽象、常见情况与并行",
+          "pages": "13–16、29"
+        },
+        {
+          "id": "performance",
+          "title": "怎样比较性能",
+          "description": "执行时间、指令数与 CPI",
+          "pages": "36–50"
+        },
+        {
+          "id": "limits-and-tradeoffs",
+          "title": "加速的边界与代价",
+          "description": "Amdahl 定律、功耗和成本",
+          "pages": "51–54"
+        },
+        {
+          "id": "overview-practice",
+          "title": "概述自测",
+          "description": "用数字检验理解",
+          "pages": "40–56"
+        }
+      ],
+      "scope": "依据整份 56 页课件筛选：系统组成与程序执行、八个设计思路、性能评价、功耗和成本。课程考核、竞赛安排和型号年表略去；单周期与流水线大图在后续 CPU 章节深入。各节标注 PDF 页码。",
+      "notes": "摩尔定律作为集成度发展的历史观察介绍。区分 CPU 时间与总响应时间、吞吐率与延迟、功率与能量；80% 可优化比例对应的 5 倍加速是极限，有限局部加速达不到该值。",
+      "references": []
+    },
+    {
+      "slug": "digital-logic-foundations",
+      "chapter": "02",
+      "title": "数字电路基础",
+      "description": "从逻辑门与布尔代数出发，搭出加法器、存储状态和处理器的数据通路。",
+      "file": "02-digital.html",
+      "source": "2 数电基础n.pdf",
+      "sourcePages": 151,
+      "updated": "2026-10-23",
+      "kicker": "从 0 和 1 搭建电路",
+      "sections": [
+        {
+          "id": "digital-logic",
+          "title": "电平、逻辑门与 CMOS",
+          "description": "把电信号抽象成 0 和 1",
+          "pages": "4–12、49–62"
+        },
+        {
+          "id": "boolean-algebra",
+          "title": "布尔代数与真值表",
+          "description": "从功能得到表达式",
+          "pages": "13–30、46–48、65–69"
+        },
+        {
+          "id": "karnaugh-map",
+          "title": "卡诺图化简",
+          "description": "用相邻关系消去变量",
+          "pages": "31–45"
+        },
+        {
+          "id": "arithmetic-circuits",
+          "title": "加法器与 ALU",
+          "description": "进位、减法与运算选择",
+          "pages": "70–77、98–100"
+        },
+        {
+          "id": "routing-circuits",
+          "title": "译码器与选择器",
+          "description": "选择谁输出、写入谁",
+          "pages": "78–83"
+        },
+        {
+          "id": "memory-and-codes",
+          "title": "存储器与可靠编码",
+          "description": "容量、扩展、格雷码和奇偶校验",
+          "pages": "84–97、143–146"
+        },
+        {
+          "id": "state-and-clock",
+          "title": "锁存器、触发器与寄存器",
+          "description": "电路怎样记住状态",
+          "pages": "101–121、138–142"
+        },
+        {
+          "id": "state-machines",
+          "title": "计数器与状态机",
+          "description": "从状态转移设计电路",
+          "pages": "122–137"
+        },
+        {
+          "id": "datapath-timing",
+          "title": "数据通路与时序",
+          "description": "让正确的数据在正确时刻写入",
+          "pages": "147–151"
+        },
+        {
+          "id": "digital-practice",
+          "title": "数电综合自测",
+          "description": "把逻辑、状态与时序串起来",
+          "pages": "4–151"
+        }
+      ],
+      "scope": "覆盖 151 页课件的核心知识：门电路、逻辑化简、组合电路、存储器、可靠编码、时序电路与数据通路。原子结构、器件封装和芯片引脚表只保留理解电路所需部分。页码均为 PDF 页序。",
+      "notes": "采用 ¬ 表示取反，+ 表示逻辑或，邻接表示逻辑与。区分高电平透明的 D 锁存器与边沿触发的 D 触发器，注明低有效清零及译码输出；移位明确位序，进位与有符号溢出分别讨论。演示为理想逻辑模型，不模拟模拟电压或传播波形。",
+      "references": [
+        {
+          "title": "TI SN74HC74 · 上升沿、异步清零及建立/保持时间",
+          "url": "https://www.ti.com/lit/ds/symlink/sn74hc74.pdf"
+        },
+        {
+          "title": "TI SN74HC138 · 低有效译码输出与使能",
+          "url": "https://www.ti.com/lit/ds/symlink/sn74hc138.pdf"
+        }
+      ]
+    },
+    {
       "slug": "instructions-and-assembly",
       "chapter": "03",
       "title": "指令与汇编",
@@ -13,12 +150,49 @@
       "sourcePages": 54,
       "updated": "2026-10-23",
       "sections": [
-        { "id": "instruction-set", "title": "指令、汇编与 CPU", "description": "软件与硬件之间的约定" },
-        { "id": "instruction-format", "title": "指令格式与数据", "description": "操作、操作数和字节顺序" },
-        { "id": "mips-encoding", "title": "MIPS 指令编码", "description": "把汇编变成 32 位机器指令" },
-        { "id": "data-addressing", "title": "数据寻址与数组", "description": "先算地址，再读写数据" },
-        { "id": "control-flow", "title": "分支与跳转", "description": "找到下一条要执行的指令" },
-        { "id": "practice", "title": "综合练习", "description": "用一段程序串起所有知识" }
+        {
+          "id": "instruction-set",
+          "title": "指令、汇编与 CPU",
+          "description": "软件与硬件之间的约定"
+        },
+        {
+          "id": "instruction-format",
+          "title": "指令格式与数据",
+          "description": "操作、操作数和字节顺序"
+        },
+        {
+          "id": "mips-encoding",
+          "title": "MIPS 指令编码",
+          "description": "把汇编变成 32 位机器指令"
+        },
+        {
+          "id": "data-addressing",
+          "title": "数据寻址与数组",
+          "description": "先算地址，再读写数据"
+        },
+        {
+          "id": "control-flow",
+          "title": "分支与跳转",
+          "description": "找到下一条要执行的指令"
+        },
+        {
+          "id": "practice",
+          "title": "综合练习",
+          "description": "用一段程序串起所有知识"
+        }
+      ],
+      "kicker": "从代码到执行",
+      "scope": "覆盖课件 3.1 指令系统的发展、3.2 指令格式、3.3 寻址方式（1–54 页）。目录中的 3.4、3.5 尚未在该文件展开。采用经典 32 位定长 MIPS；具体架构扩展与模拟器设置可能不同。",
+      "notes": "补全分支的 PC+4 基准、J 型高 4 位的来源和立即数字段解释。RISC 的规整格式是设计取向，不能推广为所有 RISC 扩展均采用同一种指令长度。",
+      "references": [
+        {
+          "title": "MIPS32 指令手册 · BEQ（印刷页 55）",
+          "url": "https://www.cs.umd.edu/class/fall2024/cmsc411/resources/MIPS_Vol2.pdf#page=63"
+        },
+        {
+          "title": "MIPS32 指令手册 · J（印刷页 115）",
+          "url": "https://www.cs.umd.edu/class/fall2024/cmsc411/resources/MIPS_Vol2.pdf#page=123"
+        }
       ]
     }
   ]
