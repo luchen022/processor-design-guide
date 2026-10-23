@@ -1,0 +1,25 @@
+{
+  "title": "现代处理器设计讲义",
+  "subtitle": "把原理讲清楚，把每一步算明白。",
+  "repository": "https://github.com/luchen022/processor-design-guide",
+  "lessons": [
+    {
+      "slug": "instructions-and-assembly",
+      "chapter": "03",
+      "title": "指令与汇编",
+      "description": "从一行 C 代码出发，理解指令格式、寄存器、数据寻址与程序跳转。",
+      "file": "03-instructions.html",
+      "source": "3指令与汇编-1.pdf",
+      "sourcePages": 54,
+      "updated": "2026-10-23",
+      "sections": [
+        { "id": "instruction-set", "title": "指令、汇编与 CPU", "description": "软件与硬件之间的约定" },
+        { "id": "instruction-format", "title": "指令格式与数据", "description": "操作、操作数和字节顺序" },
+        { "id": "mips-encoding", "title": "MIPS 指令编码", "description": "把汇编变成 32 位机器指令" },
+        { "id": "data-addressing", "title": "数据寻址与数组", "description": "先算地址，再读写数据" },
+        { "id": "control-flow", "title": "分支与跳转", "description": "找到下一条要执行的指令" },
+        { "id": "practice", "title": "综合练习", "description": "用一段程序串起所有知识" }
+      ]
+    }
+  ]
+}

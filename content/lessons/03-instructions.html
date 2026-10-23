@@ -1,0 +1,131 @@
+<div class="chapter-intro"><span class="intro-symbol" aria-hidden="true">↳</span><p>这一章沿着一个问题展开：<strong><code>x = a + b</code> 到了 CPU 里，究竟会发生什么？</strong> 先认识指令，再理解编码和地址，最后读懂一段有条件分支的程序。处理器型号年表略去，发展史只保留能解释设计选择的部分。</p></div>
+
+<section class="lesson-section" id="instruction-set" data-section>
+  <div class="section-heading"><span class="section-index">01</span><div><div class="eyebrow">THE CONTRACT</div><h2>指令、汇编与 CPU</h2></div></div>
+  <p class="section-lead">指令集规定软件可以要求什么；CPU 用电路实现这些约定。</p>
+  <p>机器指令用二进制表示加法、读写数据、比较和跳转等操作。汇编语言用助记符和寄存器名称表达这些操作，汇编器再把真实指令编码成机器码。汇编还可以提供伪指令，一条伪指令可能展开成多条机器指令。</p>
+  <div class="flow-diagram" aria-label="高级语言经过编译和汇编转换为机器码，由 CPU 执行"><span>C 等高级语言<small>描述要完成的任务</small></span><b aria-hidden="true">→</b><span>汇编指令<small>操作与操作数</small></span><b aria-hidden="true">→</b><span>机器指令<small>规定的二进制编码</small></span><b aria-hidden="true">→</b><span>CPU 执行<small>电路实现操作</small></span></div>
+  <p class="caption">这是便于理解的典型主线，实际工具链还包括链接、装载等步骤，编译器也可以直接生成目标代码。</p>
+  <h3>ISA 与 CPU 实现</h3>
+  <p><strong>ISA（指令集架构）</strong>规定指令的可见行为，还包括寄存器、数据类型、编码、寻址和异常等规则。流水线、执行单元和缓存如何组织，属于实现层面。同一套 ISA 可以有不同的 CPU 实现。</p>
+  <div class="comparison-pair"><div><span class="mini-label">寄存器 REGISTER</span><h3>CPU 内部的小型快速存储</h3><p>保存正在使用的数据、中间结果，也可以保存地址。<code>$t0</code>、<code>$s1</code> 是寄存器的名称。</p></div><div><span class="mini-label">内存 MEMORY</span><h3>通过地址访问的存储空间</h3><p>存放程序与数据。本课 MIPS 按字节编址，一个 32 位字占 4 个连续字节。</p></div></div>
+  <h3>从一个加法开始</h3>
+  <pre class="code-block"><code><span class="code-op">add</span> $t0, $t1, $t2    <span class="code-comment"># $t0 ← $t1 + $t2</span></code></pre>
+  <p>MIPS 的这种写法是<strong>目的在前、来源在后</strong>。计算时读取两个来源，结果覆盖目的寄存器。一个 C 变量在某段代码中使用哪个寄存器，由编译器安排。</p>
+  <p>MIPS 采用 <strong>load/store 结构</strong>：普通整数加法使用寄存器数据；内存数据通过专门的加载、存储指令读取和写入。这里说的是数据访问，CPU 还需要读取指令本身。</p>
+  <div class="lab" id="execution-lab"><div class="lab-heading"><div><span class="lab-label">动手推演 / 01</span><h3>看数据一步步流动</h3></div><span class="lab-chip">逐条执行</span></div>
+    <div class="lab-controls"><label>程序<select data-sim-mode><option value="sum">x = a + b</option><option value="conditional">带条件的数组写入</option></select></label><label><span data-sim-a-label>a</span><input data-sim-a type="number" value="7" min="-1000000" max="1000000" step="1"></label><label><span data-sim-b-label>b</span><input data-sim-b type="number" value="5" min="-1000000" max="1000000" step="1"></label></div>
+    <p class="input-error" data-sim-error role="alert" hidden></p><div class="simulation-layout"><div class="simulation-program"><div class="panel-label">指令 <span data-sim-pc>PC = 0x00001000</span></div><ol data-sim-code class="program-lines"></ol></div><div class="simulation-state"><div class="panel-label">寄存器</div><table class="data-table compact"><thead><tr><th scope="col">名称</th><th scope="col">值</th></tr></thead><tbody data-sim-registers></tbody></table></div></div>
+    <div class="panel-label">内存中的字 <span>地址为十进制；每个字占 4 字节</span></div><div class="memory-strip" data-sim-memory></div><div class="simulation-bottom"><div class="button-row"><button class="button button-small" type="button" data-sim-prev disabled>← 上一步</button><button class="button button-primary button-small" type="button" data-sim-next>执行下一条 →</button><button class="button button-quiet button-small" type="button" data-sim-reset>重置</button></div><span class="subtle" data-sim-step>尚未执行</span></div><p class="lab-result" data-sim-detail aria-live="polite">加法结果先保存在寄存器中，执行 sw 后才写回内存。</p><p class="caption" data-sim-context></p>
+  </div>
+  <h3>必要的发展史：CISC 与 RISC</h3>
+  <p>CISC 的一个方向是增加指令功能，让单条指令承担更多工作，并兼顾已有程序的兼容性。对实际程序的观察推动了 RISC 思路：优先处理常用操作，强调规整格式、寄存器计算和 load/store 分工，以便高效实现。</p>
+  <p>它们是设计取向。现代实现相互吸收技术；实际性能还受 CPU 内部结构、内存访问和程序行为影响。本课采用的经典 MIPS 指令固定为 32 位，不能把这一条件推广到所有 RISC 架构与扩展。</p>
+  <button type="button" class="complete-button" data-complete="instruction-set" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="instruction-format" data-section>
+  <div class="section-heading"><span class="section-index">02</span><div><div class="eyebrow">INSTRUCTION & DATA</div><h2>指令格式与数据</h2></div></div>
+  <p class="section-lead">一条指令需要说明操作、输入、结果位置，以及怎样继续执行。</p>
+  <p><strong>操作码</strong>说明做什么，<strong>地址码</strong>描述操作对象。地址码可以指定寄存器、涉及内存地址，也可以直接携带常数。顺序执行时，下一条指令地址通常由 CPU 隐含推算；转移指令则提供改变执行位置的信息。</p>
+  <h3>地址个数：统计显式指定的操作数字段</h3>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">形式</th><th scope="col">示意写法</th><th scope="col">含义</th></tr></thead><tbody><tr><th scope="row">三地址</th><td><code>add R0, R1, R2</code></td><td><code>R0 ← R1 + R2</code></td></tr><tr><th scope="row">二地址</th><td><code>ADD R1, R2</code></td><td><code>R1 ← R1 + R2</code>，其中一个来源兼作目的</td></tr><tr><th scope="row">一地址</th><td><code>ADD A</code></td><td><code>AC ← AC + 内存[A]</code>，累加器 AC 是约定的位置</td></tr><tr><th scope="row">零地址</th><td><code>ADD</code></td><td>默认取栈顶两个数，再把和压回栈顶</td></tr></tbody></table></div>
+  <p class="caption">上表比较不同机器风格的教学语法；本课 MIPS 的普通寄存器加法采用三地址形式。零地址统计显式字段，参与运算的数据仍可以隐含存在。</p>
+  <p>显式字段少可以节省编码空间；字段多能更灵活地指定来源和去向。程序的总指令数与执行时间还取决于具体操作和实现。</p>
+  <h3>字节、字与大小端</h3>
+  <div class="definition-line"><span>1 字节 = 8 位</span><span>本课 1 字 = 32 位 = 4 字节</span><span>相邻地址相差 1 字节</span></div>
+  <p>一个从地址 <code>0x1000</code> 开始存放的字占用 <code>0x1000</code> 至 <code>0x1003</code>。大端把最高有效字节放在低地址，小端把最低有效字节放在低地址；变化的是字节排列。</p>
+  <div class="lab" id="endian-lab"><div class="lab-heading"><div><span class="lab-label">动手推演 / 02</span><h3>一个数，四个字节</h3></div><span class="lab-chip">内存视图</span></div><div class="lab-controls"><label>32 位数（十六进制）<input type="text" data-endian-word value="0x12345678" maxlength="10" spellcheck="false"></label><div class="segmented-control" role="group" aria-label="字节顺序"><button type="button" data-endian="little" aria-pressed="true">小端</button><button type="button" data-endian="big" aria-pressed="false">大端</button></div></div><p class="input-error" data-endian-error role="alert" hidden></p><div class="byte-strip" data-endian-bytes></div><p class="lab-result" data-endian-detail aria-live="polite"></p><p class="caption">按相同规则读回整个字，数值保持不变；这里没有反转单个字节内部的位。</p></div>
+  <button type="button" class="complete-button" data-complete="instruction-format" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="mips-encoding" data-section>
+  <div class="section-heading"><span class="section-index">03</span><div><div class="eyebrow">THE 32-BIT LANGUAGE</div><h2>MIPS 指令编码</h2></div></div>
+  <p class="section-lead">32 位编码空间有限。不同格式，把空间分配给不同的信息。</p>
+  <p>MIPS 有 32 个通用寄存器，指定一个需要 <strong>5 位</strong>，因为 <code>2⁵ = 32</code>。机器码存的是编号：<code>$t0 = 8</code>、<code>$t3 = 11</code>、<code>$s1 = 17</code>。</p>
+  <div class="format-overview"><div><strong>R 型</strong><code>op 6 │ rs 5 │ rt 5 │ rd 5 │ shamt 5 │ funct 6</code><span>以寄存器运算为例：两个来源、一个目的，以及具体操作。</span></div><div><strong>I 型</strong><code>op 6 │ rs 5 │ rt 5 │ immediate 16</code><span>给立即数、数据地址偏移量或分支偏移量留出空间。</span></div><div><strong>J 型</strong><code>op 6 │ target 26</code><span>把更多编码空间用于构造跳转目标。</span></div></div>
+  <h3>R 型：先认清角色，再放进字段</h3>
+  <pre class="code-block"><code><span class="code-op">add</span> $t0, $t3, $s1
+<span class="code-comment"># 汇编顺序：目的 rd、来源 rs、来源 rt
+# 字段顺序：op、rs、rt、rd、shamt、funct</span></code></pre>
+  <p>本例字段为 <code>0 | 11 | 17 | 8 | 0 | 32</code>。<code>op</code> 和 <code>funct</code> 共同确定运算：<code>add</code> 的 funct 是 32，<code>sub</code> 是 34，两者 op 都是 0。其他 R 型指令会按自己的语义使用这些字段。</p>
+  <h3>I 型：同一个字段，作用随指令变化</h3>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">指令</th><th scope="col">rs</th><th scope="col">rt</th><th scope="col">16 位字段</th></tr></thead><tbody><tr><th scope="row"><code>addi</code></th><td>提供加数</td><td>接收结果</td><td>参与加法的常数</td></tr><tr><th scope="row"><code>lw</code></th><td>提供基址</td><td>接收读取的数据</td><td>字节偏移量</td></tr><tr><th scope="row"><code>sw</code></th><td>提供基址</td><td>提供要写入的数据</td><td>字节偏移量</td></tr><tr><th scope="row"><code>beq</code></th><td>比较来源</td><td>比较来源</td><td>以 4 字节为单位的分支偏移量</td></tr></tbody></table></div>
+  <p>本课的 <code>addi</code>、<code>lw</code>、<code>sw</code> 使用有符号 16 位立即数，范围是 <strong>−32768～32767</strong>，使用前按符号扩展。I 型字段怎样解释由具体指令规定，例如逻辑立即数指令有不同规则。</p>
+  <div class="lab" id="encoding-lab"><div class="lab-heading"><div><span class="lab-label">动手推演 / 03</span><h3>组装一条机器指令</h3></div><span class="lab-chip" data-encoding-type>R 型</span></div><div class="lab-controls encoding-controls"><label>操作<select data-encoding-op><option value="add">add</option><option value="sub">sub</option><option value="addi">addi</option><option value="lw">lw</option><option value="sw">sw</option></select></label><label><span data-rs-label>rs · 来源 1</span><select data-encoding-rs aria-label="rs 寄存器"></select></label><label><span data-rt-label>rt · 来源 2</span><select data-encoding-rt aria-label="rt 寄存器"></select></label><label data-rd-control>rd · 目的<select data-encoding-rd aria-label="rd 寄存器"></select></label><label data-immediate-control hidden>立即数 / 字节偏移<input type="number" data-encoding-immediate min="-32768" max="32767" step="1" value="48"></label></div><p class="input-error" data-encoding-error role="alert" hidden></p><div class="assembly-preview" data-encoding-asm></div><div class="bit-fields" data-encoding-fields></div><div class="encoding-result" aria-live="polite"><span>32 位机器码</span><strong data-encoding-hex></strong></div><p class="caption" data-encoding-note></p></div>
+  <button type="button" class="complete-button" data-complete="mips-encoding" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="data-addressing" data-section>
+  <div class="section-heading"><span class="section-index">04</span><div><div class="eyebrow">FIND THE DATA</div><h2>数据寻址与数组</h2></div></div>
+  <p class="section-lead">寄存器里的数与这个数所指向的内存内容，是两层不同的信息。</p>
+  <p>假设 <code>R1 = 1000</code>，从内存地址 1000 开始的字为 42，从地址 1004 开始的字为 7。下面用 <code>内存[地址]</code> 表示读取该地址处的一个字。</p>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">寻址方式</th><th scope="col">怎样取得操作数</th><th scope="col">本例的值</th></tr></thead><tbody><tr><th scope="row">立即数</th><td>直接使用指令里的常数 1000</td><td>1000</td></tr><tr><th scope="row">寄存器</th><td>使用 R1 的值</td><td>1000</td></tr><tr><th scope="row">直接</th><td><code>内存[1000]</code></td><td>42</td></tr><tr><th scope="row">寄存器间接</th><td><code>内存[R1]</code></td><td>42</td></tr><tr><th scope="row">基址加偏移</th><td><code>内存[R1 + 4]</code></td><td>7</td></tr></tbody></table></div>
+  <p><strong>存储器间接寻址</strong>多一层取地址：若内存[800] = 1000、内存[1000] = 42，就先访问 800 取得地址 1000，再到 1000 取出数据 42。这种计数指的是取数据过程中的内存访问，未计取指令与缓存实现细节。</p>
+  <h3>有效地址 EA：先算位置，再按指令读写</h3>
+  <div class="formula">EA = 基址寄存器的值 + 有符号字节偏移量</div>
+  <pre class="code-block"><code><span class="code-op">addi</span> $t0, $s1, 4    <span class="code-comment"># 计算一个数：$s1 + 4</span>
+<span class="code-op">lw</span>   $t0, 4($s1)    <span class="code-comment"># 计算地址后，读取该处的一个字</span>
+<span class="code-op">sw</span>   $t0, 4($s1)    <span class="code-comment"># 计算地址后，把 $t0 写入该处</span></code></pre>
+  <p>加载和存储可以使用相同的地址算法，数据流向由操作码决定。<code>lw</code> 读取后保留内存原值，<code>sw</code> 写入后保留源寄存器的值。</p>
+  <h3>数组下标，要换成字节偏移</h3>
+  <div class="formula">A[i] 的地址 = 数组基地址 + i × 每个元素的字节数</div>
+  <p>本课每个字占 4 字节，所以 <code>A[12]</code> 相对数组起点的偏移量为 <code>12 × 4 = 48</code> 字节。变址寻址常用于改变索引、遍历数组；复合寻址可以组合“基址 + 索引 × 比例 + 固定偏移”。哪些项能放进一条指令由 ISA 决定，MIPS 的 <code>lw/sw</code> 直接提供“寄存器基址 + 常数偏移”。</p>
+  <div class="lab" id="array-lab"><div class="lab-heading"><div><span class="lab-label">动手推演 / 04</span><h3>从下标走到内存地址</h3></div><span class="lab-chip">4 字节 / 元素</span></div><div class="lab-controls"><label>数组基地址（十进制）<input type="number" data-array-base value="1000" min="0" max="4294966780" step="4"></label><label class="range-label">数组下标 i <output data-array-index-label>12</output><input type="range" data-array-index min="0" max="128" value="12"></label></div><p class="input-error" data-array-error role="alert" hidden></p><div class="array-cells" data-array-cells></div><p class="lab-result" data-array-result aria-live="polite"></p><code class="generated-code" data-array-code></code></div>
+  <h3>把一行 C 代码拆开</h3>
+  <pre class="code-block"><code><span class="code-comment"># $s0 保存 x；$s1 保存数组 A 的基地址
+# C：A[100] = x - A[12];</span>
+<span class="code-op">lw</span>  $t0, 48($s1)       <span class="code-comment"># 取 A[12]</span>
+<span class="code-op">sub</span> $t0, $s0, $t0      <span class="code-comment"># 计算差值</span>
+<span class="code-op">sw</span>  $t0, 400($s1)      <span class="code-comment"># 写回 A[100]</span></code></pre>
+  <button type="button" class="complete-button" data-complete="data-addressing" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="control-flow" data-section>
+  <div class="section-heading"><span class="section-index">05</span><div><div class="eyebrow">FIND THE NEXT INSTRUCTION</div><h2>分支与跳转</h2></div></div>
+  <p class="section-lead">数据寻址决定去哪里取数；指令寻址决定程序到哪里继续。</p>
+  <p>以下统一把 <strong>PC 定义为当前分支或跳转指令的地址</strong>。本课指令长 4 字节，顺序位置是 <code>PC + 4</code>。例如 <code>0x1000</code> 后面的指令依次位于 <code>0x1004</code>、<code>0x1008</code>、<code>0x100C</code>。</p>
+  <h3>beq：比较寄存器，按相对距离分支</h3>
+  <pre class="code-block"><code><span class="code-op">beq</span> $t0, $t1, TARGET    <span class="code-comment"># 相等时转移到 TARGET</span></code></pre>
+  <p><code>TARGET</code> 是指令位置的标签，汇编器会计算它对应的偏移字段。<code>beq</code> 属于 I 型，两个寄存器都提供比较数据。</p>
+  <div class="formula">目标地址 = PC + 4 + 有符号 offset × 4</div>
+  <p>例如当前地址 <code>0x1000</code>、目标 <code>0x1010</code>，字段应为 <code>(0x1010 − 0x1004) ÷ 4 = 3</code>。偏移量为负时能回到前面的指令，这为循环提供了基础。16 位有符号字段对应相对 <code>PC+4</code> 约 ±128 KiB 的范围，精确字节位移为 −131072～131068。</p>
+  <div class="note"><strong>经典 MIPS 的延迟槽</strong><p>本讲的经典 <code>beq</code> 和 <code>j</code> 在完成转移前，先执行紧随其后的一条指令。初学示例把空操作 <code>nop</code> 放在这里。它影响执行顺序，目标地址计算公式保持不变。具体架构版本与教学模拟器设置需分别确认。</p></div>
+  <h3>j：拼接出跳转目标</h3>
+  <p>J 型的 26 位目标字段用于构造地址。指令地址按 4 字节对齐，因此最低 2 位为 00，再从 <code>PC+4</code> 取最高 4 位，拼成 32 位地址。</p>
+  <div class="jump-concatenation" aria-label="J 型目标地址为 PC 加 4 的高 4 位、26 位目标字段和两个零拼接"><span>PC+4 高 4 位<small>4 位</small></span><span>目标字段<small>26 位</small></span><span>00<small>2 位</small></span></div>
+  <p>这种方式称为<strong>伪直接寻址</strong>，可以在 <code>PC+4</code> 所在的 256 MiB 对齐区域内选择目标。这里的运算是拼接；分支公式中的运算则是相加。</p>
+  <div class="lab" id="branch-lab"><div class="lab-heading"><div><span class="lab-label">动手推演 / 05</span><h3>亲手算一个跳转目标</h3></div><span class="lab-chip">地址推演</span></div><div class="lab-controls"><label>指令类型<select data-branch-mode><option value="beq">beq · PC 相对寻址</option><option value="j">j · 伪直接寻址</option></select></label><label>当前指令地址 PC（十六进制）<input type="text" data-branch-pc value="0x1000" spellcheck="false"></label><label data-offset-control>有符号 16 位偏移量（十进制）<input type="number" data-branch-offset value="-2" min="-32768" max="32767" step="1"></label><label data-target-control hidden>26 位目标字段（十六进制）<input type="text" data-branch-index value="0x00000800" spellcheck="false"></label></div><p class="input-error" data-branch-error role="alert" hidden></p><div class="branch-calculation" data-branch-formula></div><div class="branch-output" aria-live="polite"><span>计算出的目标地址</span><strong data-branch-result></strong></div><p class="caption" data-branch-note></p></div>
+  <div class="table-scroll"><table class="data-table"><thead><tr><th scope="col">指令</th><th scope="col">地址计算</th><th scope="col">偏移量解释</th></tr></thead><tbody><tr><th scope="row"><code>lw / sw</code></th><td>基址寄存器值 + 偏移量</td><td>字节，直接相加</td></tr><tr><th scope="row"><code>beq</code></th><td>PC + 4 + 偏移量 × 4</td><td>以 4 字节为单位</td></tr><tr><th scope="row"><code>j</code></th><td>高 4 位 + 目标字段 + 00 的位拼接</td><td>按拼接规则构造地址</td></tr></tbody></table></div>
+  <button type="button" class="complete-button" data-complete="control-flow" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>
+
+<section class="lesson-section" id="practice" data-section>
+  <div class="section-heading"><span class="section-index">06</span><div><div class="eyebrow">PUT IT ALL TOGETHER</div><h2>用一段程序，检查理解</h2></div></div>
+  <p class="section-lead">先独立推演，再检查答案。做错的地方，就是最值得回看的那个步骤。</p>
+  <p>综合例子中，<code>$s1 = 1000</code>（十进制数组基址），<code>$s0 = 20</code>（x 的值），<code>A[2] = 7</code>，<code>A[5] = 99</code>。每个元素占 4 字节，左侧指令地址为十六进制。</p>
+  <pre class="code-block numbered-code"><code>0x1000:       <span class="code-op">lw</span>  $t0, 8($s1)
+0x1004:       <span class="code-op">beq</span> $s0, $t0, END
+0x1008:       <span class="code-op">nop</span>
+0x100C:       <span class="code-op">sub</span> $t1, $s0, $t0
+0x1010:       <span class="code-op">sw</span>  $t1, 20($s1)
+0x1014: END:  <span class="code-op">nop</span></code></pre>
+  <p>也可以回到第一个演示，选择“带条件的数组写入”逐条核对。该演示支持延迟槽，并可修改 x 与 A[2] 的值。</p>
+  <noscript><p class="note">正文可以直接阅读。交互演示和答案检查需要启用 JavaScript。</p></noscript>
+  <form id="lesson-quiz" class="quiz-form">
+    <fieldset class="quiz-question" data-answer="implicit" data-answer-type="choice" data-explanation="零地址统计显式操作数字段。栈式加法可以默认取栈顶两个数，把结果压回栈顶。"><legend><span>01</span> 零地址加法怎样取得操作数？</legend><label class="radio-option"><input type="radio" name="q1" value="none">加法不需要输入数据</label><label class="radio-option"><input type="radio" name="q1" value="implicit">可以使用约定的隐含位置，例如栈顶</label><label class="radio-option"><input type="radio" name="q1" value="memory">必须在指令中给出完整内存地址</label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="56" data-answer-type="hex" data-explanation="小端排列为 78、56、34、12；地址 0x1001 是第二个字节，因此为 0x56。"><legend><span>02</span> 0x12345678 按小端存于 0x1000，地址 0x1001 的字节是什么？</legend><label class="answer-label">十六进制字节<input type="text" name="q2" placeholder="例如 0x12" autocomplete="off" spellcheck="false"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="t0-t3-s1" data-answer-type="choice" data-explanation="sub 的汇编顺序为 rd、rs、rt。因此 rs=$t0，rt=$t3，rd=$s1。"><legend><span>03</span> sub $s1, $t0, $t3 的 rs、rt、rd 依次是哪三个寄存器？</legend><label class="radio-option"><input type="radio" name="q3" value="s1-t0-t3">$s1、$t0、$t3</label><label class="radio-option"><input type="radio" name="q3" value="t0-t3-s1">$t0、$t3、$s1</label><label class="radio-option"><input type="radio" name="q3" value="t3-t0-s1">$t3、$t0、$s1</label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="1008" data-answer-type="number" data-explanation="有效地址为 1000 + 8 = 1008；偏移量已经按字节给出，无须再乘 4。读出后 $t0=7。"><legend><span>04</span> 综合例子的第一条 lw 访问哪个数据地址？</legend><label class="answer-label">十进制地址<input type="text" name="q4" inputmode="numeric" placeholder="填写地址" autocomplete="off"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="13" data-answer-type="number" data-explanation="20 与 7 不相等，beq 不转移。执行延迟槽 nop、减法和存储后，A[5]=20−7=13。"><legend><span>05</span> 按初始条件执行完整程序，A[5] 的最终值是多少？</legend><label class="answer-label">十进制整数<input type="text" name="q5" inputmode="numeric" placeholder="填写数值" autocomplete="off"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="3" data-answer-type="number" data-explanation="beq 在 0x1004，以 0x1008 为基准；(0x1014−0x1008)÷4=3。"><legend><span>06</span> 综合例子中 beq 的 16 位偏移字段应填多少？</legend><label class="answer-label">十进制偏移量<input type="text" name="q6" inputmode="numeric" placeholder="填写偏移量" autocomplete="off"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="99" data-answer-type="number" data-explanation="从初始状态重新执行，x=7 与 A[2]=7 相等，执行延迟槽 nop 后跳到 END，跳过 sub 和 sw，A[5] 保留初值 99。"><legend><span>07</span> 从初始状态重新执行，只把 $s0 改成 7，A[5] 最后是多少？</legend><label class="answer-label">十进制整数<input type="text" name="q7" inputmode="numeric" placeholder="填写数值" autocomplete="off"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="1ff8" data-answer-type="hex" data-explanation="目标地址为 0x2000+4+(−3)×4=0x2004−0xC=0x1FF8。"><legend><span>08</span> beq 在 0x2000，偏移字段为 −3，条件成立时目标地址是多少？</legend><label class="answer-label">十六进制地址<input type="text" name="q8" placeholder="例如 0x1000" autocomplete="off" spellcheck="false"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <fieldset class="quiz-question" data-answer="80002000" data-answer-type="hex" data-explanation="PC+4 的高 4 位为 8，低 28 位为目标字段左移 2 位后的 0002000，拼接得到 0x80002000。"><legend><span>09</span> j 的字段左移 2 位后为 0x00002000，PC+4 的高 4 位为 0x8，目标地址是多少？</legend><label class="answer-label">十六进制地址<input type="text" name="q9" placeholder="填写完整地址" autocomplete="off" spellcheck="false"></label><p class="quiz-feedback" hidden></p></fieldset>
+    <div class="quiz-actions"><button type="submit" class="button button-primary">检查答案 <span>↗</span></button><button type="reset" class="button button-quiet">重新练习</button><p data-quiz-score aria-live="polite">共 9 题，答案只保存在当前浏览器。</p></div>
+  </form>
+  <details class="solution"><summary>查看综合程序对应的 C 代码</summary><pre class="code-block"><code>if (x != A[2]) {
+    A[5] = x - A[2];
+}</code></pre><p>C 在“不相等”时进入代码块；这段汇编在“相等”时跳过代码块。读分支时，要同时看比较条件和目标位置。</p></details>
+  <button type="button" class="complete-button" data-complete="practice" aria-pressed="false">标记本节已学 <span>✓</span></button>
+</section>

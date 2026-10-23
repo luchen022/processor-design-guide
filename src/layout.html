@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{DESCRIPTION}}">
+  <meta name="theme-color" content="#f8faf9">
+  <title>{{TITLE}}</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/site.js"></script>
+</head>
+<body data-lesson="{{LESSON_KEY}}">
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="现代处理器设计讲义首页"><span class="brand-symbol" aria-hidden="true"><span></span></span><span>现代处理器设计<span class="brand-note">学习讲义 / STUDY GUIDE</span></span></a>
+    <nav class="header-links" aria-label="主导航"><a href="/" {{HOME_CURRENT}}>课程目录</a><a href="{{REPOSITORY}}" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a><button class="menu-button" type="button" aria-label="打开课程导航" aria-controls="mobile-menu">目录 <span aria-hidden="true">☰</span></button></nav>
+  </header>
+  <div class="page-layout">
+    <aside class="sidebar" aria-label="课程导航">{{SIDEBAR}}</aside>
+    <main id="main" class="main-content" tabindex="-1">{{CONTENT}}</main>
+  </div>
+  <dialog id="mobile-menu" class="mobile-menu"><div class="mobile-menu-heading"><strong>课程导航</strong><button type="button" class="button button-quiet" data-close-menu>关闭 ×</button></div><div data-mobile-navigation></div></dialog>
+  <footer class="site-footer"><span>现代处理器设计讲义</span><span>理解原理 · 动手推演 · 持续积累</span><a href="{{REPOSITORY}}" target="_blank" rel="noopener noreferrer">查看项目 ↗</a></footer>
+</body>
+</html>
